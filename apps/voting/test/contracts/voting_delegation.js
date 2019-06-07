@@ -22,12 +22,13 @@ const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 contract('Voting delegation', ([_, root, voter, anotherVoter, representative, anotherRepresentative, anyone]) => {
   let votingBase, kernelBase, aclBase, daoFactory
   let dao, acl, token, executionTarget, script, voteId, voting
-  let APP_MANAGER_ROLE, CREATE_VOTES_ROLE, MODIFY_SUPPORT_ROLE, MODIFY_QUORUM_ROLE, MODIFY_OVERRULE_WINDOW_ROLE
+  let APP_MANAGER_ROLE, CREATE_VOTES_ROLE, MODIFY_OVERRULE_WINDOW_ROLE
 
   const NOW = 1553703809  // random fixed timestamp in seconds
   const ONE_DAY = 60 * 60 * 24
   const OVERRULE_WINDOW = ONE_DAY
   const VOTING_DURATION = ONE_DAY * 5
+  const EARLY_EXECUTION_ALLOWED = true
 
   const MIN_QUORUM = pct(20)
   const MIN_SUPPORT = pct(70)
@@ -43,8 +44,6 @@ contract('Voting delegation', ([_, root, voter, anotherVoter, representative, an
   before('load roles', async () => {
     APP_MANAGER_ROLE = await kernelBase.APP_MANAGER_ROLE()
     CREATE_VOTES_ROLE = await votingBase.CREATE_VOTES_ROLE()
-    MODIFY_SUPPORT_ROLE = await votingBase.MODIFY_SUPPORT_ROLE()
-    MODIFY_QUORUM_ROLE = await votingBase.MODIFY_QUORUM_ROLE()
     MODIFY_OVERRULE_WINDOW_ROLE = await votingBase.MODIFY_OVERRULE_WINDOW_ROLE()
   })
 
@@ -69,7 +68,7 @@ contract('Voting delegation', ([_, root, voter, anotherVoter, representative, an
     await acl.createPermission(root, voting.address, MODIFY_OVERRULE_WINDOW_ROLE, root, { from: root })
 
     await voting.mockSetTimestamp(NOW)
-    await voting.initialize(token.address, MIN_SUPPORT, MIN_QUORUM, VOTING_DURATION, OVERRULE_WINDOW, { from: root })
+    await voting.initialize(token.address, MIN_SUPPORT, MIN_QUORUM, VOTING_DURATION, EARLY_EXECUTION_ALLOWED, OVERRULE_WINDOW, { from: root })
   })
 
   const createVote = async (from = voter) => {
